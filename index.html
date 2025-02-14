@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Valentine Love Letter</title>
+  <style>
+    /* Basic page styling */
+    body {
+      margin: 0;
+      padding: 0;
+      background: #ffe6e6;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+    .container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 5;
+    }
+    /* Envelope container with 3D perspective */
+    .envelope {
+      position: relative;
+      width: 320px;
+      height: 200px;
+      cursor: pointer;
+      perspective: 800px;
+    }
+    /* Envelope flap styling with an upside down triangle clip-path */
+    .flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 50%;
+      background: #ff6666;
+      border: 2px solid #d00;
+      border-bottom: none;
+      /* Upside down triangle: base at the top, tip at bottom center */
+      clip-path: polygon(0 0, 50% 100%, 100% 0);
+      /* Set transform origin to the bottom edge (the crease) */
+      transform-origin: top center;
+      transition: transform 1s ease;
+      z-index: 2;
+    }
+    /* Envelope body styling */
+    .body {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 99%;
+      background: #fff;
+      border: 2px solid #d00;
+      border-top: none;
+      z-index: 1;
+    }
+    /* When the envelope opens, rotate the flap a full 180° about its bottom edge */
+    .envelope.open .flap {
+      transform: rotateX(-180deg);
+    }
+    /* Dark overlay styling */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.5);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 10;
+      pointer-events: none;
+    }/
+    .overlay.active {
+      opacity: 1;
+    }
+    /* Modal love letter pop-up styling */
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: #fff;
+      padding: 20px;
+      border: 2px solid #d00;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      z-index: 30;
+      transition: transform 0.5s ease;
+      max-width: 80%;
+      max-height: 80%;
+      overflow: auto;
+      text-align: center;
+    }
+    
+    /* Style for the "Click me" text (button) */
+    .click-me {
+      font-family: 'Brush Script MT', cursive;
+      color: red;
+      cursor: pointer;
+      font-size: 1.5em;
+      margin-top: 20px;
+      text-align: center;
+    }
+    
+    /* Styling for the popup photos */
+    .popup-photo {
+      position: fixed;
+      max-width: 150px;
+      animation: fadeInOut 1s forwards;
+      z-index: 100;
+    }
+
+    @keyframes fadeInOut {
+      0% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      30% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.1);
+      }
+    }
+
+    .modal.active {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    /* Hearts falling (raining) animation */
+    @keyframes rain {
+      0% {
+        opacity: 1;
+        transform: translateY(0) rotate(0deg) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(110vh) rotate(360deg) scale(1.5);
+      }
+    }
+    /* Each heart styling */
+    .heart {
+      position: absolute;
+      color: red;
+      pointer-events: none;
+      user-select: none;
+      z-index: 20;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Envelope with flap and body -->
+    <div class="envelope" id="envelope">
+      <div class="flap"></div>
+      <div class="body"></div>
+    </div>
+  </div>
+  
+  <!-- Dark overlay -->
+  <div class="overlay" id="overlay"></div>
+  
+  <!-- Modal love letter -->
+  <div class="modal" id="modal">
+    <p>Hi Angel,</p>
+    <p>
+      Happy Valentines Day, I'm so sorry kung di
+      ako nakapunta ngayong valentines, I'm super sure
+      super busy lang talaga for OJT hunt HAHAHAHA.
+      
+      Pero don't worry babawi ako sayo ha, mwamwa.
+    </p>
+    <p>Thank you kase sinamahan mo ko sa low days ko</p>
+    <p>Alaga mong pusa,</p>
+    <p>Kier</p>
+    <p class="click-me">Click moq</p>
+  </div>
+  
+  <script>
+    let heartsRaining = false;
+
+    // Function to start a continuous rain of hearts across the screen
+    function startHeartRain() {
+      if (heartsRaining) return;
+      heartsRaining = true;
+      
+      setInterval(() => {
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.innerText = '♥';
+        heart.style.left = Math.random() * 100 + '%';
+        heart.style.top = '-50px';
+        heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+        const duration = Math.random() * 3 + 3;
+        heart.style.animation = `rain ${duration}s linear forwards`;
+        document.body.appendChild(heart);
+        heart.addEventListener('animationend', () => {
+          heart.remove();
+        });
+      }, 200);
+    }
+    
+    // Get references to the envelope, overlay, and modal
+    const envelope = document.getElementById('envelope');
+    const overlay = document.getElementById('overlay');
+    const modal = document.getElementById('modal');
+    
+    envelope.addEventListener('click', function () {
+      if (!this.classList.contains('open')) {
+        this.classList.add('open');
+        startHeartRain();
+        setTimeout(() => {
+          overlay.classList.add('active');
+          modal.classList.add('active');
+        }, 500);
+      }
+    });
+    
+    // "Click me" event listener for the button within the modal
+    const clickMe = document.querySelector('.click-me');
+    
+    clickMe.addEventListener('click', () => {
+      // Array of random cute image URLs (using placekitten as an example)
+      const photos = [
+        "test1.png",
+        "test2.png",
+        "test3.png	",
+        "test4.png	",
+        "test5.png	"
+      ];
+    
+      // Create 5 popup photos
+      for (let i = 0; i < 5; i++) {
+        const img = document.createElement('img');
+        img.classList.add('popup-photo');
+        img.src = photos[Math.floor(Math.random() * photos.length)];
+        // Position them randomly on the screen (with some margins)
+        img.style.left = Math.random() * 80 + 'vw';
+        img.style.top = Math.random() * 80 + 'vh';
+        document.body.appendChild(img);
+    
+        // Remove the image after the animation finishes
+        img.addEventListener('animationend', () => {
+          img.remove();
+        });
+      }
+    });
+
+  </script>
+</body>
+</html>
